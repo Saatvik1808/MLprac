@@ -1,0 +1,49 @@
+const axios = require("axios");
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+async function callApi(username, city, page) {
+  try {
+    const val = await axios.get("https://jsonmock.hackerrank.com/api/transactions");
+    const jsonObj = val.data;
+    const pages = jsonObj.total_pages;
+
+    var debit = 0.0,
+      credit = 0.0;
+
+    for (let k = 1; k <= pages; k++) {
+      const res = await axios.get(`https://jsonmock.hackerrank.com/api/transactions?page=${k}`);
+      const obj = res.data;
+      const data = obj.data;
+
+      for (let index = 0; index < data.length; index++) {
+        if (data[index].userName === username && data[index].location.city === city) {
+          const amt = parseFloat(data[index].amount.substr(1).replace(/[^0-9.-]+/g, ""));
+          if (data[index].txnType === "debit") {
+            debit = Math.max(debit, amt);
+          }
+          if (data[index].txnType === "credit") {
+            credit = Math.max(credit, amt);
+          }
+        }
+      }
+    }
+
+    return [currencyFormatter.format(credit), currencyFormatter.format(debit)];
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
+
+// Example usage:
+callApi("Bob Martin", "Bourg")
+  .then((ans) => {
+    console.log(ans);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });

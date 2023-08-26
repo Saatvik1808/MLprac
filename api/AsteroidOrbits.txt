@@ -1,0 +1,50 @@
+const axios = require("axios");
+
+async function callApi(discoverydate, orbitclass) {
+  const val = await axios.get(`https://jsonmock.hackerrank.com/api/asteroids/search?discovery_date=${discoverydate}&orbit_class=${orbitclass}`);
+
+  const jsonObj = val.data;
+  const pages = jsonObj.total_pages;
+
+  var debit = 0.0, credit = 0.0;
+  let user = [];
+
+  for (let k = 1; k <= pages; k++) {
+    const res = await axios.get(`https://jsonmock.hackerrank.com/api/asteroids/search?discovery_date=${discoverydate}&orbit_class=${orbitclass}&page=${k}`);
+    const obj = res.data;
+    const data = obj.data;
+
+    if (data) {
+      for (let index = 0; index < data.length; index++) {
+        user.push(data[index]);
+      }
+    }
+  }
+
+  let newarray = user.sort((a, b) => {
+    const val1 = Number(a.period_yr);
+    const val2 = Number(b.period_yr);
+    if (val1 < val2) {
+      return -1;
+    } else if (val1 > val2) {
+      return 1;
+    } else {
+      return a.designation.localeCompare(b.designation);
+    }
+  });
+
+  let arras = newarray.map(i => Object.values(i)[0]);
+
+  return arras;
+}
+
+async function main() {
+  try {
+    const ans = await callApi("2010", "aten");
+    console.log(ans);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+main();

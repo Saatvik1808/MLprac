@@ -1,0 +1,35 @@
+const axios = require("axios");
+
+async function callApi(all) {
+  try {
+    const val = await axios.get(`https://jsonmock.hackerrank.com/api/weather/search?name=${all}`);
+    const jsonObj = val.data;
+    const pages = jsonObj.total_pages;
+
+    let user = [];
+    for (let k = 1; k <= pages; k++) {
+      const res = await axios.get(`https://jsonmock.hackerrank.com/api/weather/search?name=${all}&page=${k}`);
+      const obj = res.data;
+      const data = obj.data;
+
+      data.forEach(({ name, weather, status }) => {
+        const wind = Number(status[0].match(/\d+/)[0]);
+        const humidity = Number(status[1].match(/\d+/)[0]);
+        weather = weather.replace(' degree', '');
+        user.push(`${name},${weather},${wind},${humidity}`);
+      });
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Error fetching data:", error.message);
+    return []; // Return an empty array in case of an error
+  }
+}
+
+async function main() {
+  const ans = await callApi("all");
+  console.log(ans);
+}
+
+main(); // Call the main function to start the process.

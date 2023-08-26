@@ -1,0 +1,46 @@
+const axios = require("axios");
+
+async function findCountries(region, keyword) {
+  try {
+    const initial_response = await axios.get(
+      `https://jsonmock.hackerrank.com/api/countries/search?region=${region}&name=${keyword}`
+    );
+    const totalPages = initial_response.data.total_pages;
+    const result = [];
+
+    for (let k = 1; k <= totalPages; k++) {
+      const response = await axios.get(
+        `https://jsonmock.hackerrank.com/api/countries/search?region=${region}&name=${keyword}&page=${k}`
+      );
+      const data = response.data.data;
+      result.push(...data);
+    }
+
+    result.sort((a, b) => {
+      if (a.population === b.population) {
+        return a.name.localeCompare(b.name);
+      }
+      return a.population - b.population;
+    });
+
+    const formatted_result = result.map(
+      (record) => `${record.name},${record.population}`
+    );
+    return formatted_result;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
+
+const region = "Europe";
+const keyword = "de";
+findCountries(region, keyword)
+  .then((countriesData) => {
+    countriesData.forEach((countryInfo) => {
+      console.log(countryInfo);
+    });
+  })
+  .catch((error) => {
+    console.error("Error:", error.message);
+  });

@@ -1,0 +1,39 @@
+const axios = require("axios");
+
+async function callApi(all) {
+  try {
+    const val = await axios.get(`https://jsonmock.hackerrank.com/api/weather/search?name=${all}`);
+    const jsonObj = val.data;
+    const pages = jsonObj.total_pages;
+
+    let user = [];
+    for (let k = 1; k <= pages; k++) {
+      const res = await axios.get(`https://jsonmock.hackerrank.com/api/weather/search?name=${all}&page=${k}`);
+      const obj = await res.data;
+      const data = obj.data;
+
+      data.map(({ name, weather, status }) => {
+        const wind = Number(status[0].match(/\d+/)[0]);
+        const humidity = Number(status[1].match(/\d+/)[0]);
+        weather = weather.replace(' degree', ''); // Remove ' degree' from the weather string
+        user.push(`${name},${weather},${wind},${humidity}`);
+      });
+    }
+
+    return user;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+async function main() {
+  try {
+    const ans = await callApi("all");
+    console.log(ans);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+main();
